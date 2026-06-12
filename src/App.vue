@@ -1,15 +1,19 @@
 <script setup>
-import hello from './components/hello.vue';
+
 </script>
 
+
 <template>
-  <hello></hello>
-  <h1 id="id">20260610</h1>
+  <router-view />
 </template>
 
+
 <style scoped>
-#id{
-  color: blueviolet;
-  text-align: center;
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 </style>
