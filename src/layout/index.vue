@@ -39,13 +39,21 @@ const handleLogout = () => {
                 <el-menu-item index="/waveform/comtrade">
                     <span>comtrade格式录波文件读取解析</span>
                 </el-menu-item>
+                <el-menu-item index="/waveform/waveform-vision">
+                    <span>波形图像识别解析</span>
+                </el-menu-item>
+                <el-menu-item index="/waveform/power-quality">
+                    <span>电能质量测试数据自动化读取</span>
+                </el-menu-item>
             </el-menu>
+
+            
         </el-aside>
 
         <el-container>
             <el-header class="layout-header">
                 <div class="header-left">
-                    <span class="system-title">试验录波文件快速解析</span>
+                    <span class="system-title">试验录波文件快速解析平台</span>
                 </div>
                 <div class="header-right">
                     <el-button type="danger" size="small" plain @click="handleLogout">安全退出</el-button>

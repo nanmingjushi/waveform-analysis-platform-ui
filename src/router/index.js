@@ -24,6 +24,18 @@ const routes = [
                 name: 'Comtrade',
                 component: () => import('../views/waveform/comtrade/index.vue'),
                 meta: { title: 'comtrade格式录波文件读取解析' }
+            },
+            {
+                path: 'waveform/waveform-vision',
+                name: 'Waveform-vision',
+                component: () => import('../views/waveform/waveform-vision/index.vue'),
+                meta: { title: '波形图像识别解析' }
+            },
+            {
+                path: 'waveform/power-quality',
+                name: 'Power-quality',
+                component: () => import('../views/waveform/power-quality/index.vue'),
+                meta: { title: '电能质量测试数据自动化读取' }
             }
         ]
     }

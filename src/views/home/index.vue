@@ -8,7 +8,7 @@
         <el-card class="welcome-card">
             <template #header>
                 <div class="card-header">
-                    <span>工作看板摘要</span>
+                    <span>系统首页</span>
                 </div>
             </template>
             <div class="welcome-content">
@@ -16,6 +16,12 @@
                 <p>当前安全通信管道已全线打通，数据加密拦截器运行正常。</p>
                 <p style="color: #909399; margin-top: 10px; font-size: 14px;">
                     请通过左侧导航菜单，切换至 <strong>[comtrade格式录波文件读取解析]</strong> 开展COMTRADE格式录波文件读取解析工作。
+                </p>
+                <p style="color: #909399; margin-top: 10px; font-size: 14px;">
+                    请通过左侧导航菜单，切换至 <strong>[波形图像识别解析]</strong> 开展波形图像识别解析工作。
+                </p>
+                <p style="color: #909399; margin-top: 10px; font-size: 14px;">
+                    请通过左侧导航菜单，切换至 <strong>[电能质量测试数据自动化读取]</strong> 开展电能质量测试数据自动化读取工作。
                 </p>
             </div>
         </el-card>
@@ -38,7 +44,7 @@
 }
 
 .welcome-content h3 {
-    color: #304156;
+    color: #5cdd78;
     margin-bottom: 15px;
 }
 
