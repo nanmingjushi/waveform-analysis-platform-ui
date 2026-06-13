@@ -16,8 +16,8 @@ const loginForm = reactive({
 })
 
 const loginRules = {
-    username: [{ required: true, message: '操作员账号不能为空', trigger: 'blur' }],
-    password: [{ required: true, message: '操作密码不能为空', trigger: 'blur' }]
+    username: [{ required: true, message: '账号不能为空', trigger: 'blur' }],
+    password: [{ required: true, message: '密码不能为空', trigger: 'blur' }]
 }
 
 const handleLogin = () => {
@@ -27,7 +27,7 @@ const handleLogin = () => {
         try {
             // 直接驱动我们的 Pinia 异步 Action，完成落盘与缓存
             await userStore.login(loginForm)
-            ElMessage.success('登录成功，正在初始化安全上下文...')
+            ElMessage.success('登录成功，正在初始化系统...')
             router.push('/')
         } catch (error) {
             console.error('登录失败', error)
@@ -44,7 +44,7 @@ const handleLogin = () => {
         <el-card class="login-card">
             <div class="login-title">
                 <h2>试验录波文件快速解析平台</h2>
-                <p>comtrade格式录波文件读取解析，波形图像识别解析，电能质量测试报告自动化生成</p>
+                <p>本系统包含三个模块：<br>1）comtrade格式录波文件读取解析；2）波形图像识别解析；3）电能质量测试报告自动化生成。</p>
             </div>
 
             <el-form :model="loginForm" :rules="loginRules" ref="loginFormRef" size="large">
@@ -58,7 +58,7 @@ const handleLogin = () => {
 
                 <el-form-item>
                     <el-button type="primary" class="login-btn" :loading="loading" @click="handleLogin">
-                        安全登录
+                        登录
                     </el-button>
                 </el-form-item>
             </el-form>
@@ -73,7 +73,8 @@ const handleLogin = () => {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+    background: url("../../assets/login-bg.png") no-repeat center center fixed;
+    background-size: cover;
 }
 
 .login-card {

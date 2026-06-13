@@ -12,7 +12,7 @@ const userStore = useUserStore()
 const activeMenu = computed(() => route.path)
 
 const handleLogout = () => {
-    ElMessageBox.confirm('确定要退出当前录波分析安全上下文吗？', '提示', {
+    ElMessageBox.confirm('确定要退出当前试验录波文件快速解析平台吗？', '提示', {
         confirmButtonText: '确定退出',
         cancelButtonText: '取消',
         type: 'warning'
@@ -106,9 +106,9 @@ const handleLogout = () => {
 }
 
 .system-title {
-    font-size: 14px;
-    color: #606266;
-    font-weight: 500;
+    font-size: 20px;
+    color: #000;
+    font-weight: 600;
 }
 
 .layout-main {
