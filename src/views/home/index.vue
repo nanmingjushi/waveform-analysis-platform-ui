@@ -18,7 +18,7 @@
                     请通过左侧导航菜单，切换至 <strong>[comtrade格式录波文件读取解析]</strong> 开展COMTRADE格式录波文件读取解析工作。
                 </p>
                 <p style="color: #909399; margin-top: 10px; font-size: 14px;">
-                    请通过左侧导航菜单，切换至 <strong>[波形图像识别解析]</strong> 开展波形图像识别解析工作。
+                    请通过左侧导航菜单，切换至 <strong>[波形图像识别关键参数]</strong> 开展波形图像识别解析工作。
                 </p>
                 <p style="color: #909399; margin-top: 10px; font-size: 14px;">
                     请通过左侧导航菜单，切换至 <strong>[电能质量测试数据自动化读取]</strong> 开展电能质量测试数据自动化读取工作。
