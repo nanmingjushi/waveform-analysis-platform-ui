@@ -40,7 +40,7 @@ const handleLogout = () => {
                     <span>comtrade格式录波文件读取解析</span>
                 </el-menu-item>
                 <el-menu-item index="/waveform/waveform-vision">
-                    <span>波形图像识别解析</span>
+                    <span>波形图像识别关键参数</span>
                 </el-menu-item>
                 <el-menu-item index="/waveform/power-quality">
                     <span>电能质量测试数据自动化读取</span>
