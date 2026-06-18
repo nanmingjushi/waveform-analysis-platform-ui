@@ -45,6 +45,9 @@ const handleLogout = () => {
                 <el-menu-item index="/waveform/power-quality">
                     <span>电能质量测试数据自动化读取</span>
                 </el-menu-item>
+                <el-menu-item index="/waveform/springai">
+                    <span>电力系统AI专家助手</span>
+                </el-menu-item>
             </el-menu>
 
             

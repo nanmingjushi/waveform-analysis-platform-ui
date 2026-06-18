@@ -36,6 +36,12 @@ const routes = [
                 name: 'Power-quality',
                 component: () => import('../views/waveform/power-quality/index.vue'),
                 meta: { title: '电能质量测试数据自动化读取' }
+            },
+            {
+                path: 'waveform/springai',
+                name: 'SpringAI',
+                component: () => import('../views/waveform/springai/index.vue'),
+                meta: { title: ' AI专家助手' }
             }
         ]
     }

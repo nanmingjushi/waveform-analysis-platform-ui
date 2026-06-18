@@ -23,6 +23,9 @@
                 <p style="color: #909399; margin-top: 10px; font-size: 14px;">
                     请通过左侧导航菜单，切换至 <strong>[电能质量测试数据自动化读取]</strong> 开展电能质量测试数据自动化读取工作。
                 </p>
+                <p style="color: #909399; margin-top: 10px; font-size: 14px;">
+                    请通过左侧导航菜单，切换至 <strong>[电力系统AI专家助手]</strong> 开展与电力系统AI专家助手的对话。
+                </p>
             </div>
 
             <!-- home-bottom图片 -->
