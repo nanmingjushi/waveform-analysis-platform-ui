@@ -22,8 +22,8 @@
     <el-card class="chat-card">
       <template #header>
         <div class="card-header">
-          <span>电力系统 AI 专家助手</span>
-          <el-tag type="success" effect="plain">已接入 qwen3.7-plus</el-tag>
+          <span> 电力系统 AI 专家助手</span>
+          <el-tag type="primary" effect="plain">基于Qwen3.7Plus</el-tag>
         </div>
       </template>
 
@@ -45,20 +45,34 @@
           <div class="avatar">AI</div>
           <div class="content-box-thinking">
             <div class="thinking-dots">
-              <span>AI 正在思考中</span>
+              <span>AI 正在分析知识库并思考中</span>
               <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="input-area">
-        <el-input v-model="inputPrompt" type="textarea" :rows="2"
-          placeholder="请输入您的问题..." :disabled="isThinking"
-          @keyup.enter.prevent="handleSend" />
-        <el-button type="primary" :disabled="isThinking" class="send-btn" @click="handleSend">
-          发送
-        </el-button>
+      <div class="bottom-input-wrapper">
+        <div v-if="currentUploadedFile" class="rag-status-bar">
+          <el-tag type="success" size="default" closable @close="handleClearFile" class="rag-tag">
+            📚 已加载背景知识库：{{ currentUploadedFile }} (RAG 增强模式已自动开启)
+          </el-tag>
+        </div>
+
+        <div class="input-area">
+          <el-upload action="/ai/qwen/load" name="file" :headers="uploadHeaders" :before-upload="beforePdfUpload"
+            :on-success="handleUploadSuccess" :on-error="handleUploadError" :show-file-list="false"
+            class="inline-pdf-uploader">
+            <el-button type="info" plain :icon="Paperclip" class="upload-icon-btn" title="上传 PDF 背景知识文档" />
+          </el-upload>
+
+          <el-input v-model="inputPrompt" type="textarea" :rows="2" placeholder="请输入您的问题。点击左侧按钮可以上传 PDF 开启知识库增强..."
+            :disabled="isThinking" @keyup.enter.prevent="handleSend" />
+
+          <el-button type="primary" :disabled="isThinking" class="send-btn" @click="handleSend">
+            发送
+          </el-button>
+        </div>
       </div>
     </el-card>
   </div>
@@ -66,30 +80,89 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import MarkdownIt from 'markdown-it'
+import { ElMessage, ElLoading } from 'element-plus'
+import { useUserStore } from '../../../stores/user'
+import MarkdownIt from 'markdown-it'  //渲染markdown文本
+import markdownItMathjax3 from 'markdown-it-mathjax3'  //渲染latex公式
+import { Paperclip } from '@element-plus/icons-vue'
 
+
+const userStore = useUserStore()
 const inputPrompt = ref('')
 const isThinking = ref(false)
 const messageBox = ref(null)
 
-// 会话大盘的核心响应式数据
+// 会话数据大盘
 const sessions = ref([])
 const currentSessionId = ref('')
 
-// 初始化 Markdown 渲染器
-const md = new MarkdownIt({
-  html: false, breaks: true, linkify: true
-})
+// 初始化高级具有良好换行特性的 Markdown 转化器
+const md = new MarkdownIt({ html: false, breaks: true, linkify: true })
+md.use(markdownItMathjax3)
 const renderMarkdown = (text) => text ? md.render(text) : ''
 
-// 计算属性：动态获取当前高亮会话的消息列表
+// 抓取并计算当前激活会话绑定的已上传文件名
+const currentUploadedFile = computed(() => {
+  const active = sessions.value.find(s => s.id === currentSessionId.value)
+  return active ? active.uploadedFile : ''
+})
+
+// 动态提取当前会话的消息序列
 const currentMessages = computed(() => {
   const active = sessions.value.find(s => s.id === currentSessionId.value)
   return active ? active.messages : []
 })
 
-// 核心机制：从本地 LocalStorage 加载或初始化会话列表
+// 自动向 Upload 注入系统 Bearer Token 头
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('waveform_token') || ''
+  return {
+    'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`
+  }
+})
+
+// 清除当前会话的 PDF 背景知识（允许切换回普通模式）
+const handleClearFile = () => {
+  const active = sessions.value.find(s => s.id === currentSessionId.value)
+  if (active) {
+    active.uploadedFile = ''
+    saveSessionsToLocal()
+    ElMessage.info('已卸载背景知识库，切换回普通对话模式')
+  }
+}
+
+// PDF 文件上传前置拦截
+const beforePdfUpload = (rawFile) => {
+  if (rawFile.type !== 'application/pdf' && !rawFile.name.endsWith('.pdf')) {
+    ElMessage.error('系统目前支持 .pdf 格式的知识文档！')
+    return false
+  }
+  ElLoading.service({ text: '正在调动后端解析引擎切片、计算向量并灌入向量数据库...', background: 'rgba(0, 0, 0, 0.7)' })
+  return true
+}
+
+// PDF 上传向量库库成功
+const handleUploadSuccess = (response, uploadFile) => {
+  ElLoading.service().close()
+
+  // 查找当前激活的会话，把上传的文件名字绑死在它身上
+  const active = sessions.value.find(s => s.id === currentSessionId.value)
+  if (active) {
+    active.uploadedFile = uploadFile.name // 🌟 自动把名字灌进去
+    saveSessionsToLocal()
+  }
+
+  ElMessage.success('PDF 背景文本切片计算完成，RAG 增强模式已自动激活！')
+}
+
+// 上传失败
+const handleUploadError = (error) => {
+  ElLoading.service().close()
+  console.error(error)
+  ElMessage.error('文档向量化失败，请检查网络或后端环境')
+}
+
+// 加载/重构本地LocalStorage会话列表
 const initPlatformSessions = () => {
   const localData = localStorage.getItem('waveform_ai_sessions')
   if (localData) {
@@ -100,73 +173,55 @@ const initPlatformSessions = () => {
         return
       }
     } catch (e) {
-      console.error('解析本地会话历史失败，重置大盘', e)
+      console.error(e)
     }
   }
-  // 兜底：如果本地没数据，自动创建一个初始默认会话
   createDefaultSession()
 }
 
-// 创建全新的空会话对象
+// 创建新会话默认结构（新增 uploadedFile 属性）
 const createDefaultSession = () => {
   const defaultId = 'session_' + Date.now()
   sessions.value.push({
     id: defaultId,
-    title: '全新的电力技术咨询',
+    title: '新对话',
+    uploadedFile: '', // 
     messages: [
-      { role: 'assistant', content: '您好！我是本平台的 AI 专家助手，您可以向我提问任何问题。您可以随时问我关于 COMTRADE 录波解析、OpenCV 波形识别或电能质量报告自动生成的问题。' }
+      { role: 'assistant', content: '您好！我是本平台的 AI 专家助手，您可以问我任何问题。您可以上传 PDF 文件，上传成功后系统将自动激活 RAG 背景知识检索。' }
     ]
   })
   currentSessionId.value = defaultId
   saveSessionsToLocal()
 }
 
-// 按钮事件：新建对话
 const createNewSession = () => {
-  if (isThinking.value) {
-    ElMessage.warning('请等待 AI 回复完成后再新建对话')
-    return
-  }
+  if (isThinking.value) return
   createDefaultSession()
-  nextTick(() => ElMessage.success('成功创建新对话'))
 }
 
-// 切换对话
 const switchSession = (id) => {
-  if (isThinking.value) {
-    ElMessage.warning('AI 正在输出中，请勿频繁切换')
-    return
-  }
+  if (isThinking.value) return
   currentSessionId.value = id
   scrollToBottom()
 }
 
-// 删除对话
 const deleteSession = (id) => {
-  if (isThinking.value && currentSessionId.value === id) {
-    ElMessage.warning('当前对话正忙，无法删除')
-    return
-  }
-
+  if (isThinking.value && currentSessionId.value === id) return
   const index = sessions.value.findIndex(s => s.id === id)
   if (index !== -1) {
     sessions.value.splice(index, 1)
-    // 如果删掉的是当前激活的，自动切到第一个会话
     if (currentSessionId.value === id) {
       currentSessionId.value = sessions.value[0].id
     }
     saveSessionsToLocal()
-    ElMessage.info('会话历史已清理')
     scrollToBottom()
   }
 }
 
-// 持久化保存到浏览器本地
 const saveSessionsToLocal = () => {
   localStorage.setItem('waveform_ai_sessions', JSON.stringify(sessions.value))
 }
 
-// 自动滚动
 const scrollToBottom = async () => {
   await nextTick()
   if (messageBox.value) {
@@ -174,18 +229,16 @@ const scrollToBottom = async () => {
   }
 }
 
-// 发送消息核心逻辑（配合后端 chatId 穿透）
+// 核心对话发送逻辑
 const handleSend = async () => {
   const prompt = inputPrompt.value.trim()
   if (!prompt) return
 
-  // 1. 查找当前激活的会话对象
   const activeSession = sessions.value.find(s => s.id === currentSessionId.value)
   if (!activeSession) return
 
-  // 用户消息立刻上屏，并同步修改左侧会话的标题（取前12个字，显得更专业）
   activeSession.messages.push({ role: 'user', content: prompt })
-  if (activeSession.title === '全新/未命名的电力技术咨询' || activeSession.messages.length <= 3) {
+  if (activeSession.title === '新对话' || activeSession.messages.length <= 3) {
     activeSession.title = prompt.length > 12 ? prompt.substring(0, 12) + '...' : prompt
   }
 
@@ -200,8 +253,9 @@ const handleSend = async () => {
   try {
     const token = localStorage.getItem('waveform_token') || ''
 
-    // 在此处将前端当前的 currentSessionId 作为参数传入，穿透给后端的 @RequestParam chatId
-    const url = `/ai/qwen/stream?prompt=${encodeURIComponent(prompt)}&chatId=${currentSessionId.value}`
+    // 判定 RAG 状态：只要当前会话身上绑着 uploadedFile，那就给后端穿透传 useRag=true
+    const isRagActive = activeSession.uploadedFile ? 'true' : 'false'
+    const url = `/ai/qwen/stream?prompt=${encodeURIComponent(prompt)}&chatId=${currentSessionId.value}&useRag=${isRagActive}`
 
     const response = await fetch(url, {
       method: 'GET',
@@ -229,8 +283,7 @@ const handleSend = async () => {
           const cleanText = line.replace('data:', '')
 
           if (aiMessageIndex === -1) {
-            isThinking.value = false // 关掉思考小动画
-            // 向当前会话的历史数组中压入大模型的响应体，获取其索引
+            isThinking.value = false
             aiMessageIndex = activeSession.messages.push({ role: 'assistant', content: '' }) - 1
           }
 
@@ -251,7 +304,6 @@ const handleSend = async () => {
       activeSession.messages[aiMessageIndex].content = streamingText
     }
 
-    // 每次大模型完整输出完毕后，将最新的消息记录固化到本地缓存，防止刷新丢失历史记录
     saveSessionsToLocal()
 
   } catch (error) {
@@ -266,7 +318,6 @@ const handleSend = async () => {
   }
 }
 
-// 页面挂载时自动初始化会话大盘
 onMounted(() => {
   initPlatformSessions()
   scrollToBottom()
@@ -274,7 +325,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 双栏响应式大盘弹性盒架构 */
 .ai-platform-container {
   display: flex;
   padding: 20px;
@@ -283,7 +333,7 @@ onMounted(() => {
   background-color: #f5f7fa;
 }
 
-/* 左侧会话侧边栏样式 */
+/* 左侧会话侧边栏 */
 .session-sidebar {
   width: 260px;
   background-color: #ffffff;
@@ -360,7 +410,7 @@ onMounted(() => {
   color: #f56c6c;
 }
 
-/* 右侧聊天大盘样式（完美承接原本的精致样式） */
+/* 右侧聊天核心卡片 */
 .chat-card {
   flex: 1;
   display: flex;
@@ -378,7 +428,7 @@ onMounted(() => {
 
 .message-list {
   flex: 1;
-  height: 630px;
+  height: 600px;
   overflow-y: auto;
   padding: 10px 15px;
   border-bottom: 1px solid #ebeef5;
@@ -454,7 +504,64 @@ onMounted(() => {
   white-space: pre-wrap;
 }
 
-/* Markdown 精细化标签注入样式 */
+/* 底部复合输入区高级排版样式 */
+.bottom-input-wrapper {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rag-status-bar {
+  display: flex;
+  padding-left: 66px;
+  /* 完美对齐下方左移后的输入框起始位置 */
+}
+
+.rag-tag {
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(103, 194, 58, 0.15);
+}
+
+.input-area {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+.input-area :deep(.el-textarea) {
+  flex: 1;
+}
+
+.inline-pdf-uploader {
+  display: inline-block;
+  flex-shrink: 0;
+}
+.inline-pdf-uploader :deep(.el-upload) {
+  display: block;
+}
+
+/* 回形针按钮样式 */
+.upload-icon-btn {
+  height: 47px;                
+  width: 45px;                 
+  border: none !important;     
+  color: #24b906 !important;   
+  font-size: 20px;             
+  cursor: pointer;
+  transition: all 0.25s ease;  /* 丝滑的过场动画 */
+}
+/*  鼠标指针移上去时的视觉反馈 */
+.upload-icon-btn:hover {
+  color: #db6763 !important;          /* 悬浮时图标高亮变为主题蓝 */
+  background-color: #f4f4f5 !important; /* 悬浮时泛起一层若隐若现的浅灰阴影 */
+}
+
+.send-btn {
+  width: 90px;
+  border-radius: 8px;
+}
+
+/* Markdown 精细化格式渲染 */
 .markdown-body :deep(h3) {
   font-size: 15px;
   font-weight: bold;
@@ -524,17 +631,5 @@ onMounted(() => {
 
 .dot:nth-child(3) {
   animation-delay: .4s;
-}
-
-.input-area {
-  margin-top: 15px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-}
-
-.send-btn {
-  height: 54px;
-  width: 90px;
 }
 </style>
