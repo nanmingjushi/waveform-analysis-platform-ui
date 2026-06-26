@@ -48,6 +48,9 @@ const handleLogout = () => {
                 <el-menu-item index="/waveform/springai">
                     <span>电力系统AI专家助手</span>
                 </el-menu-item>
+                <el-menu-item index="/waveform/springai/mcp-report">
+                    <span>电能质量报告自动生成(MCP)</span>
+                </el-menu-item>
             </el-menu>
 
             

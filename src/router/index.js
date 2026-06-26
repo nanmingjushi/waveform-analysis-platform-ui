@@ -42,6 +42,12 @@ const routes = [
                 name: 'SpringAI',
                 component: () => import('../views/waveform/springai/index.vue'),
                 meta: { title: ' AI专家助手' }
+            },
+            {
+                path: 'waveform/springai/mcp-report',
+                name: 'SpringAI+MCP',
+                component: () => import('../views/waveform/springai/McpReport.vue'),
+                meta: { title: ' 电能质量报告自动生成' }
             }
         ]
     }
