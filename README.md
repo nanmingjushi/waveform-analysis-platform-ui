@@ -33,3 +33,11 @@ comtrade格式录波文件读取解析
 电能质量测试数据自动化读取
 
 ![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E8%83%BD%E8%B4%A8%E9%87%8F%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AF%BB%E5%8F%96.png?raw=true)
+
+电力系统AI专家助手、本地知识库（大语言模型+RAG）
+
+![](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E5%8A%9B%E7%B3%BB%E7%BB%9FAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E4%B8%93%E5%AE%B6%E5%8A%A9%E6%89%8B.png?raw=true)
+
+电能质量测试数据自动化读取（大语言模型+MCP）
+
+![电能质量报告自动生成（集成MCP）.png](https://github.com/nanmingjushi/waveform-analysis-platform/blob/master/%E7%A4%BA%E4%BE%8B/%E7%94%B5%E8%83%BD%E8%B4%A8%E9%87%8F%E6%8A%A5%E5%91%8A%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%EF%BC%88%E9%9B%86%E6%88%90MCP%EF%BC%89.png?raw=true)
